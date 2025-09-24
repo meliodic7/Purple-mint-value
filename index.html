@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monad NFT Value (Testnet)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#0f172a; color:#fff; text-align:center; padding:20px; }
+    h1 { color:#60a5fa; }
+    input { padding:10px; border-radius:8px; border:1px solid #475569; width:280px; }
+    button { background:#7c3aed; color:#fff; padding:12px 20px; border:none; border-radius:8px; cursor:pointer; font-size:16px; margin:5px; }
+    #status { margin-top:10px; color:#9ca3af; }
+    #nfts { margin-top:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:15px; }
+    .card { background:#1e293b; padding:10px; border-radius:10px; }
+    .card img { width:100%; border-radius:8px; height:150px; object-fit:cover; }
+    .muted { color:#9ca3af; font-size:14px; }
+  </style>
+</head>
+<body>
+  <h1>Monad NFT Value (Testnet)</h1>
+  <p>Paste any Monad Testnet address to see NFTs & total value</p>
+  <input id="addr" placeholder="0xYourAddressHere"/>
+  <button id="fetchBtn">Fetch NFTs</button>
+  <div id="status">Status: Idle</div>
+  <div id="total"></div>
+  <div id="nfts"></div>
+
+<script>
+const API_KEY = "33AN8MPaYtmLmuxH51GcHaIm3PE"; // ✅ yaha aapka key laga diya hai
+
+document.getElementById("fetchBtn").onclick = async () => {
+  const addr = document.getElementById("addr").value.trim();
+  if (!addr) {
+    alert("Please paste an address!");
+    return;
+  }
+
+  document.getElementById("status").innerText = "Fetching NFTs...";
+  document.getElementById("nfts").innerHTML = "";
+  document.getElementById("total").innerText = "";
+
+  try {
+    const url = `https://api.blockvision.org/v2/monad/account/nfts?address=${addr}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+    const data = await res.json();
+    const nfts = data.data || data.nfts || [];
+    if (nfts.length === 0) {
+      document.getElementById("status").innerText = "No NFTs found.";
+      return;
+    }
+
+    let totalValue = 0;
+    const grid = document.getElementById("nfts");
+
+    for (let nft of nfts) {
+      const tokenId = nft.tokenId || nft.token_id;
+      const contract = nft.contract || nft.token_address;
+      let name = nft.name || `Token #${tokenId}`;
+      let image = "";
+
+      // metadata fetch if available
+      if (nft.metadata && typeof nft.metadata === "string" && nft.metadata.startsWith("http")) {
+        try {
+          const meta = await fetch(nft.metadata).then(r => r.json());
+          name = meta.name || name;
+          image = meta.image ? meta.image.replace("ipfs://", "https://ipfs.io/ipfs/") : "";
+        } catch {}
+      }
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${image || "https://via.placeholder.com/150"}" alt="NFT"/>
+        <div>${name}</div>
+        <div class="muted">${contract?.slice(0,6)}...${contract?.slice(-4)}</div>
+      `;
+      grid.appendChild(card);
+
+      if (nft.floor_price) {
+        totalValue += Number(nft.floor_price);
+      }
+    }
+
+    document.getElementById("status").innerText = `Loaded ${nfts.length} NFTs.`;
+    document.getElementById("total").innerHTML = `<h3>Total Value: ${totalValue} MON</h3>`;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("status").innerText = "Error fetching NFTs.";
+  }
+};
+</script>
+</body>
+</html>
