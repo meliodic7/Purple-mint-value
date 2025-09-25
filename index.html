@@ -25,11 +25,11 @@
     main {
       flex: 1;
       padding: 20px;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
     input[type="text"] {
-      width: 80%;
+      width: 70%;
       padding: 10px;
       font-size: 1em;
       border-radius: 5px;
@@ -85,6 +85,8 @@
   <footer>Powered by Meliodic - Monad Testnet</footer>
 
   <script>
+    const API_ENDPOINT = 'https://monad-testnet.blockvision.org/v1/33AN8MPaYtmLmuxH51GcHaIm3PE';
+
     async function fetchNFTs() {
       const address = document.getElementById('walletAddress').value.trim();
       if (!address) {
@@ -92,37 +94,38 @@
         return;
       }
 
-      document.getElementById('nftList').innerHTML = 'Loading...';
-      document.getElementById('totalValue').innerText = '';
+      const nftListDiv = document.getElementById('nftList');
+      const totalDiv = document.getElementById('totalValue');
+      nftListDiv.innerHTML = 'Loading...';
+      totalDiv.innerText = '';
 
       try {
-        // Example Monad Testnet API (replace with actual endpoint)
-        const response = await fetch(`https://api.monad.xyz/testnet/nfts/${address}`);
+        const response = await fetch(`${API_ENDPOINT}?address=${address}`);
         const data = await response.json();
 
-        if (!data || data.length === 0) {
-          document.getElementById('nftList').innerHTML = 'No NFTs found in this wallet.';
+        if (!data || !data.nfts || data.nfts.length === 0) {
+          nftListDiv.innerHTML = 'No NFTs found in this wallet.';
           return;
         }
 
         let totalValue = 0;
         let html = '';
-        data.forEach(nft => {
+        data.nfts.forEach(nft => {
           html += `
             <div class="nft-card">
-              <img src="${nft.image}" alt="${nft.name}">
+              <img src="${nft.imageURL}" alt="${nft.name}">
               <div>${nft.name}</div>
-              <div>Value: ${nft.value} $MON</div>
+              <div>Collection: ${nft.collection.name}</div>
             </div>
           `;
-          totalValue += nft.value;
+          totalValue += nft.value || 0; // assuming `value` field exists
         });
 
-        document.getElementById('nftList').innerHTML = html;
-        document.getElementById('totalValue').innerText = 'Total NFT Value: ' + totalValue + ' $MON';
+        nftListDiv.innerHTML = html;
+        totalDiv.innerText = 'Total NFT Value: ' + totalValue + ' $MON';
       } catch (err) {
         console.error(err);
-        document.getElementById('nftList').innerHTML = 'Error fetching NFTs. Make sure wallet address is correct.';
+        nftListDiv.innerHTML = 'Error fetching NFTs. Make sure the wallet address is correct.';
       }
     }
   </script>
