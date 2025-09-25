@@ -19,14 +19,14 @@
 <body>
   <h1>Monad NFT Value (Testnet)</h1>
   <p>Paste any Monad Testnet address to see NFTs & total value</p>
-  <input id="addr" placeholder="0xYourAddressHere"/>
+  <input id="addr" value="0x30550E8656BBa9e3A7d4DADe8EA783D28A29BD00"/>
   <button id="fetchBtn">Fetch NFTs</button>
   <div id="status">Status: Idle</div>
   <div id="total"></div>
   <div id="nfts"></div>
 
 <script>
-const API_KEY = "33AN8MPaYtmLmuxH51GcHaIm3PE"
+const API_KEY = "33AN8MPaYtmLmuxH51GcHaIm3PE"; // ✅ yaha aapka key laga diya hai
 
 document.getElementById("fetchBtn").onclick = async () => {
   const addr = document.getElementById("addr").value.trim();
@@ -40,10 +40,10 @@ document.getElementById("fetchBtn").onclick = async () => {
   document.getElementById("total").innerText = "";
 
   try {
-    const url = `https://api.blockvision.org/v2/monad/account/nfts?address=${addr}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+    const url = https://api.blockvision.org/v2/monad/account/nfts?address=${addr};
+    const res = await fetch(url, { headers: { Authorization: Bearer ${API_KEY} } });
     const data = await res.json();
-    const nfts = data.data || data.nfts || [];
+    const nfts = data.data ⠺⠟⠵⠟⠵⠵⠺⠵⠟⠵⠵ [];
     if (nfts.length === 0) {
       document.getElementById("status").innerText = "No NFTs found.";
       return;
@@ -55,7 +55,7 @@ document.getElementById("fetchBtn").onclick = async () => {
     for (let nft of nfts) {
       const tokenId = nft.tokenId || nft.token_id;
       const contract = nft.contract || nft.token_address;
-      let name = nft.name || `Token #${tokenId}`;
+      let name = nft.name || Token #${tokenId};
       let image = "";
 
       // metadata fetch if available
@@ -69,11 +69,11 @@ document.getElementById("fetchBtn").onclick = async () => {
 
       const card = document.createElement("div");
       card.className = "card";
-      card.innerHTML = `
+      card.innerHTML = 
         <img src="${image || "https://via.placeholder.com/150"}" alt="NFT"/>
         <div>${name}</div>
         <div class="muted">${contract?.slice(0,6)}...${contract?.slice(-4)}</div>
-      `;
+      ;
       grid.appendChild(card);
 
       if (nft.floor_price) {
@@ -81,8 +81,8 @@ document.getElementById("fetchBtn").onclick = async () => {
       }
     }
 
-    document.getElementById("status").innerText = `Loaded ${nfts.length} NFTs.`;
-    document.getElementById("total").innerHTML = `<h3>Total Value: ${totalValue} MON</h3>`;
+    document.getElementById("status").innerText = Loaded ${nfts.length} NFTs.;
+    document.getElementById("total").innerHTML = <h3>Total Value: ${totalValue} MON</h3>;
   } catch (err) {
     console.error(err);
     document.getElementById("status").innerText = "Error fetching NFTs.";
