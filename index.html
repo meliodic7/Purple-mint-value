@@ -3,132 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meliodic NFT Value - Monad Testnet</title>
+  <title>PurpleMint | NFT Value</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background: #0f172a;
+      font-family: Arial, sans-serif;
+      background-color: #0f172a;
       color: #fff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      background: #1e293b;
-      padding: 20px;
       text-align: center;
-      font-size: 1.8em;
-      font-weight: bold;
+      padding: 50px;
     }
-    main {
-      flex: 1;
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    input[type="text"] {
-      width: 70%;
+    input, button {
       padding: 10px;
-      font-size: 1em;
-      border-radius: 5px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 8px;
       border: none;
-      margin-right: 10px;
     }
     button {
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      border-radius: 5px;
-      background: #6366f1;
+      background-color: #7c3aed;
       color: #fff;
       cursor: pointer;
     }
     button:hover {
-      background: #4f46e5;
+      background-color: #9d4edd;
     }
-    .nft-list {
-      margin-top: 30px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 20px;
-    }
-    .nft-card {
-      background: #1e293b;
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      background-color: #1e293b;
+      padding: 20px;
       border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-    }
-    .nft-card img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
-    footer {
-      text-align: center;
-      padding: 15px;
-      background: #1e293b;
-      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
-  <header>Meliodic NFT Value - Monad Testnet</header>
-  <main>
-    <div>
-      <input type="text" id="walletAddress" placeholder="Enter your wallet address">
-      <button onclick="fetchNFTs()">Check NFTs</button>
-    </div>
-    <div id="totalValue" style="margin-top:20px; font-size:1.2em;"></div>
-    <div class="nft-list" id="nftList"></div>
-  </main>
-  <footer>Powered by Meliodic - Monad Testnet</footer>
+  <h1>PurpleMint | Calculate Wallet NFT Floor Value on Monad Testnet</h1>
+  <input type="text" id="wallet" placeholder="Enter Wallet Address">
+  <button onclick="getNFTValue()">Calculate</button>
+
+  <div id="result"></div>
 
   <script>
-    const API_ENDPOINT = 'https://monad-testnet.blockvision.org/v1/33AN8MPaYtmLmuxH51GcHaIm3PE';
-
-    async function fetchNFTs() {
-      const address = document.getElementById('walletAddress').value.trim();
-      if (!address) {
-        alert('Please enter a wallet address!');
+    async function getNFTValue() {
+      const wallet = document.getElementById('wallet').value.trim();
+      if (!wallet) {
+        alert('Please enter a wallet address');
         return;
       }
-
-      const nftListDiv = document.getElementById('nftList');
-      const totalDiv = document.getElementById('totalValue');
-      nftListDiv.innerHTML = 'Loading...';
-      totalDiv.innerText = '';
+      document.getElementById('result').innerText = 'Fetching NFT data...';
 
       try {
-        const response = await fetch(`${API_ENDPOINT}?address=${address}`);
-        const data = await response.json();
+        // Fetch NFTs from Monad Testnet API with your key
+        const nftResponse = await fetch(
+          `https://api.monad.xyz/testnet/nfts?wallet=${wallet}&key=33AN8MPaYtmLmuxH51GcHaIm3PE`
+        );
+        const nftData = await nftResponse.json();
 
-        if (!data || !data.nfts || data.nfts.length === 0) {
-          nftListDiv.innerHTML = 'No NFTs found in this wallet.';
+        if (!nftData || nftData.length === 0) {
+          document.getElementById('result').innerText = 'No NFTs found in this wallet.';
           return;
         }
 
-        let totalValue = 0;
-        let html = '';
-        data.nfts.forEach(nft => {
-          html += `
-            <div class="nft-card">
-              <img src="${nft.imageURL}" alt="${nft.name}">
-              <div>${nft.name}</div>
-              <div>Collection: ${nft.collection.name}</div>
-            </div>
-          `;
-          totalValue += nft.value || 0; // assuming `value` field exists
+        // Calculate total NFT floor value in MON
+        let totalValueMON = 0;
+        nftData.forEach(nft => {
+          totalValueMON += parseFloat(nft.floor_price || 0);
         });
 
-        nftListDiv.innerHTML = html;
-        totalDiv.innerText = 'Total NFT Value: ' + totalValue + ' $MON';
+        // Fetch MON price in USD (using CoinGecko)
+        const priceResponse = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=monad&vs_currencies=usd`
+        );
+        const priceData = await priceResponse.json();
+        const monPriceUSD = priceData.monad?.usd || 0;
+
+        const totalValueUSD = (totalValueMON * monPriceUSD).toFixed(2);
+
+        document.getElementById('result').innerHTML = `
+          <p>Total NFT Floor Value: <strong>${totalValueMON} MON</strong></p>
+          <p>Total Value in USD: <strong>$${totalValueUSD}</strong></p>
+        `;
       } catch (err) {
         console.error(err);
-        nftListDiv.innerHTML = 'Error fetching NFTs. Make sure the wallet address is correct.';
+        document.getElementById('result').innerText = 'Error fetching NFT data. Make sure wallet address and API key are correct.';
       }
     }
   </script>
 </body>
 </html>
-
