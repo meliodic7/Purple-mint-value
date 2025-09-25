@@ -19,14 +19,14 @@
 <body>
   <h1>Monad NFT Value (Testnet)</h1>
   <p>Paste any Monad Testnet address to see NFTs & total value</p>
-  <input id="addr" value="0x30550E8656BBa9e3A7d4DADe8EA783D28A29BD00"/>
+  <input id="addr" value="
   <button id="fetchBtn">Fetch NFTs</button>
   <div id="status">Status: Idle</div>
   <div id="total"></div>
   <div id="nfts"></div>
 
 <script>
-const API_KEY = "33AN8MPaYtmLmuxH51GcHaIm3PE"; // ✅ yaha aapka key laga diya hai
+const API_KEY = "33AN8MPaYtmLmuxH51GcHaIm3PE"
 
 document.getElementById("fetchBtn").onclick = async () => {
   const addr = document.getElementById("addr").value.trim();
